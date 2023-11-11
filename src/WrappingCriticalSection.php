@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PetrKnap\CriticalSection;
 
@@ -8,6 +10,7 @@ use Symfony\Component\Lock\LockInterface;
 
 /**
  * @template T
+ *
  * @implements CriticalSectionInterface<T>
  */
 abstract class WrappingCriticalSection implements CriticalSectionInterface
@@ -16,21 +19,6 @@ abstract class WrappingCriticalSection implements CriticalSectionInterface
     protected function __construct(
         private ?CriticalSectionInterface $wrappedCriticalSection,
     ) {
-    }
-
-    /** @return SymfonyLockCriticalSection<T> */
-    public function withLock(LockInterface $lock, bool $isBlocking = true): SymfonyLockCriticalSection
-    {
-        return new SymfonyLockCriticalSection($this->getOptimalThis(), $lock, $isBlocking);
-    }
-
-    /** @return CriticalSectionInterface<T>|null */
-    private function getOptimalThis(): ?CriticalSectionInterface
-    {
-        if ($this instanceof NonCriticalSection) {
-            return $this->wrappedCriticalSection;
-        }
-        return $this;
     }
 
     /** @inheritDoc */
@@ -49,6 +37,12 @@ abstract class WrappingCriticalSection implements CriticalSectionInterface
         }
     }
 
+    /** @return SymfonyLockCriticalSection<T> */
+    public function withLock(LockInterface $lock, bool $isBlocking = true): SymfonyLockCriticalSection
+    {
+        return new SymfonyLockCriticalSection($this->getOptimalThis(), $lock, $isBlocking);
+    }
+
     /**
      * @return bool false if it is occupied (non-blocking mode only)
      *
@@ -58,4 +52,13 @@ abstract class WrappingCriticalSection implements CriticalSectionInterface
 
     /** @throws CouldNotLeaveCriticalSection */
     abstract protected function leave(): void;
+
+    /** @return CriticalSectionInterface<T>|null */
+    private function getOptimalThis(): ?CriticalSectionInterface
+    {
+        if ($this instanceof NonCriticalSection) {
+            return $this->wrappedCriticalSection;
+        }
+        return $this;
+    }
 }

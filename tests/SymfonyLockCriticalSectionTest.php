@@ -18,6 +18,7 @@ class SymfonyLockCriticalSectionTest extends TestCase
     public function testAcquiresLockBeforeCriticalSectionIsExecuted(): void
     {
         $shared = new \stdClass();
+        $shared->isLocked = false;
         $lock = self::createMock(LockInterface::class);
         $lock->expects(self::once())
             ->method('acquire')

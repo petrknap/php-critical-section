@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PetrKnap\CriticalSection;
 
@@ -11,6 +13,7 @@ use Symfony\Component\Lock\LockInterface;
 
 /**
  * @template T
+ *
  * @extends WrappingCriticalSection<T>
  */
 final class SymfonyLockCriticalSection extends WrappingCriticalSection

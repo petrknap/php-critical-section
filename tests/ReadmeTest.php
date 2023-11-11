@@ -18,8 +18,8 @@ class ReadmeTest extends TestCase implements MarkdownFileTestInterface
     public static function getExpectedOutputsOfPhpExamples(): iterable
     {
         return [
-            'single_lock' => 'string(18) "This was critical!"' . PHP_EOL,
-            'double_lock' => 'string(28) "This was even more critical!"' . PHP_EOL,
+            'single-lock' => 'string(18) "This was critical!"' . PHP_EOL,
+            'double-lock' => 'string(28) "This was even more critical!"' . PHP_EOL,
         ];
     }
 }

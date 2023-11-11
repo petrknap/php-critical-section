@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PetrKnap\CriticalSection;
 
@@ -6,6 +8,7 @@ namespace PetrKnap\CriticalSection;
  * @internal
  *
  * @template T
+ *
  * @extends WrappingCriticalSection<T>
  */
 final class NonCriticalSection extends WrappingCriticalSection
