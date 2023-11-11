@@ -1,0 +1,56 @@
+{
+  "WARNING": "This file is updated automatically. All keys will be overwritten, except of 'conflict', 'keywords', 'require', 'require-dev' and 'scripts'.",
+  "autoload": {
+    "psr-4": {
+      "PetrKnap\\CriticalSection\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "PetrKnap\\CriticalSection\\": "tests"
+    }
+  },
+  "config": {
+    "allow-plugins": false,
+    "sort-packages": true
+  },
+  "description": "Critical section based on `symfony/lock`",
+  "funding": [
+    {
+      "type": "other",
+      "url": "https://petrknap.github.io/donate.html"
+    }
+  ],
+  "homepage": "https://github.com/petrknap/php-criticalsection",
+  "keywords": [
+    "critical section",
+    "lock",
+    "locking"
+  ],
+  "license": "LGPL-3.0-or-later",
+  "name": "petrknap/critical-section",
+  "require": {
+    "php": ">=8.0",
+    "symfony/lock": "^6.0"
+  },
+  "require-dev": {
+    "nunomaduro/phpinsights": "^2.9",
+    "petrknap/shorts": "^1.2",
+    "phpstan/phpstan": "^1.10",
+    "phpunit/phpunit": "^9.6",
+    "squizlabs/php_codesniffer": "^3.7"
+  },
+  "scripts": {
+    "test": "phpunit --colors=always --testdox tests",
+    "validate": [
+      "phpcs --colors --standard=PSR12 --exclude=PSR12.Files.OpenTag,PSR12.Files.FileHeader,Generic.Files.LineLength src tests",
+      "phpstan analyse --level 5 src",
+      "phpstan analyse --level 5 tests",
+      "phpinsights analyse src"
+    ],
+    "ci-script": [
+      "@validate",
+      "@test"
+    ]
+  }
+}
