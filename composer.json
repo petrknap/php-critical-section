@@ -21,7 +21,7 @@
       "url": "https://petrknap.github.io/donate.html"
     }
   ],
-  "homepage": "https://github.com/petrknap/php-criticalsection",
+  "homepage": "https://github.com/petrknap/php-critical-section",
   "keywords": [
     "critical section",
     "lock",
