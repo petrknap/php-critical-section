@@ -11,35 +11,34 @@ use Symfony\Component\Lock\LockInterface;
 
 /**
  * @template T
- *
- * @implements CriticalSectionInterface<T>
+ * @extends WrappingCriticalSection<T>
  */
-final class SymfonyLockCriticalSection implements CriticalSectionInterface
+final class SymfonyLockCriticalSection extends WrappingCriticalSection
 {
-    public function __construct(
+    /** @param CriticalSectionInterface<T>|null $wrappedCriticalSection */
+    protected function __construct(
+        ?CriticalSectionInterface $wrappedCriticalSection,
         private LockInterface $lock,
         private bool $isBlocking,
     ) {
+        parent::__construct($wrappedCriticalSection);
     }
 
-    /** @inheritDoc */
-    public function __invoke(callable $criticalSection)
+    protected function enter(): bool
     {
         try {
-            if ($this->lock->acquire(blocking: $this->isBlocking) === false) {
-                return null;
-            }
+            return $this->lock->acquire(blocking: $this->isBlocking);
         } catch (LockConflictedException | LockAcquiringException $reason) {
             throw new CouldNotEnterCriticalSection(previous: $reason);
         }
+    }
+
+    protected function leave(): void
+    {
         try {
-            return $criticalSection();
-        } finally {
-            try {
-                $this->lock->release();
-            } catch (LockReleasingException $reason) {
-                throw new CouldNotLeaveCriticalSection(previous: $reason);
-            }
+            $this->lock->release();
+        } catch (LockReleasingException $reason) {
+            throw new CouldNotLeaveCriticalSection(previous: $reason);
         }
     }
 }
