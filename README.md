@@ -1,6 +1,6 @@
 # Critical section based on `symfony/lock`
 
-The [CriticalSection](./src/CriticalSection.php) is a simple object that handles the lock manipulation for you
+The [CriticalSection](./src/CriticalSection.php) is a simple object that handles the critical section overhead for you
 and lets you focus on the actual code.
 
 ```php
@@ -8,11 +8,25 @@ use PetrKnap\CriticalSection\CriticalSection;
 use Symfony\Component\Lock\NoLock;
 
 $lock = new NoLock();
-var_dump(
-    CriticalSection::withLock($lock)(function() {
-        return 'This was critical!';
-    })
-);
+
+$criticalOutput = CriticalSection::withLock($lock)(fn () => 'This was critical!');
+
+var_dump($criticalOutput);
+```
+
+You can wrap critical sections one inside the other thanks to the [WrappingCriticalSection](./src/WrappingCriticalSection.php).
+This makes it easy to combine multiple locks, for example.
+
+```php
+use PetrKnap\CriticalSection\CriticalSection;
+use Symfony\Component\Lock\NoLock;
+
+$lockA = new NoLock();
+$lockB = new NoLock();
+
+$criticalOutput = CriticalSection::withLock($lockA)->withLock($lockB)(fn () => 'This was even more critical!');
+
+var_dump($criticalOutput);
 ```
 
 ---

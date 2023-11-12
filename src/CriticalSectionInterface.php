@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PetrKnap\CriticalSection;
 
@@ -14,7 +16,7 @@ interface CriticalSectionInterface
     /**
      * @param callable(): T $criticalSection
      *
-     * @return ?T returned by {@link $criticalSection} or null when it is occupied in non-blocking mode
+     * @return ?T returned by {@link $criticalSection} or null when it is occupied (non-blocking mode only)
      *
      * @throws CouldNotEnterCriticalSection
      * @throws CouldNotLeaveCriticalSection

@@ -1,7 +1,7 @@
 authors
 composer PetrKnap\\CriticalSection
 dockerfile php 8.0-cli
-docker-scripts petrknap/php-criticalsection
+docker-scripts petrknap/php-critical-section
 donation
 git-crlf "*.bat"
 github-workflow docker "composer ci-script"

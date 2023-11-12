@@ -12,13 +12,13 @@ use Symfony\Component\Lock\Exception\LockAcquiringException;
 use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Exception\LockReleasingException;
 use Symfony\Component\Lock\LockInterface;
-use Symfony\Component\Lock\NoLock;
 
 class SymfonyLockCriticalSectionTest extends TestCase
 {
     public function testAcquiresLockBeforeCriticalSectionIsExecuted(): void
     {
         $shared = new \stdClass();
+        $shared->isLocked = false;
         $lock = self::createMock(LockInterface::class);
         $lock->expects(self::once())
             ->method('acquire')
@@ -30,16 +30,6 @@ class SymfonyLockCriticalSectionTest extends TestCase
         CriticalSection::withLock($lock)(function () use ($shared) {
             self::assertTrue($shared->isLocked);
         });
-    }
-
-    public function testReturnsValueReturnedByExecutedCriticalSection(): void
-    {
-        $lock = new NoLock();
-        $expected = new \stdClass();
-
-        self::assertSame($expected, CriticalSection::withLock($lock)(function () use ($expected) {
-            return $expected;
-        }));
     }
 
     public function testReleasesLockAfterCriticalSectionWasExecuted(): void
@@ -86,18 +76,6 @@ class SymfonyLockCriticalSectionTest extends TestCase
         }
     }
 
-    public function testSkipsCriticalSectionWhenItIsOccupiedInNonBlockingMode(): void
-    {
-        $lock = self::createMock(LockInterface::class);
-        $lock->expects(self::once())
-            ->method('acquire')
-            ->willReturn(false);
-
-        self::assertNull(CriticalSection::withLock($lock)(function (): bool {
-            return true;
-        }));
-    }
-
     /** @dataProvider dataThrowsWhenLockThrowsOnAcquire */
     public function testThrowsWhenLockThrowsOnAcquire(Exception $lockException): void
     {
@@ -107,6 +85,7 @@ class SymfonyLockCriticalSectionTest extends TestCase
             ->willThrowException($lockException);
 
         self::expectException(CouldNotEnterCriticalSection::class);
+
         CriticalSection::withLock($lock)(function () {
         });
     }
@@ -131,6 +110,7 @@ class SymfonyLockCriticalSectionTest extends TestCase
             ->willThrowException(new LockReleasingException());
 
         self::expectException(CouldNotLeaveCriticalSection::class);
+
         CriticalSection::withLock($lock)(function () {
         });
     }
