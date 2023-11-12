@@ -29,6 +29,22 @@ $criticalOutput = CriticalSection::withLock($lockA)->withLock($lockB)(fn () => '
 var_dump($criticalOutput);
 ```
 
+## Does your critical section work with database?
+
+Use [`doctrine/dbal`](https://packagist.org/packages/doctrine/dbal) and its `transactional` method.
+
+```php
+/** @var PetrKnap\CriticalSection\CriticalSectionInterface $criticalSection */
+/** @var Doctrine\DBAL\Connection $connection */
+$criticalSection(
+    fn () => $connection->transactional(
+        fn () => 'This was critical on DB server.'
+    )
+);
+```
+
+Always use `transactional` inside critical section to prevent starvation.
+
 ---
 
 Run `composer require petrknap/critical-section` to install it.
