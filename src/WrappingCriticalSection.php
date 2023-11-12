@@ -40,7 +40,7 @@ abstract class WrappingCriticalSection implements CriticalSectionInterface
     /** @return SymfonyLockCriticalSection<T> */
     public function withLock(LockInterface $lock, bool $isBlocking = true): SymfonyLockCriticalSection
     {
-        return new SymfonyLockCriticalSection($this->getOptimalThis(), $lock, $isBlocking);
+        return new SymfonyLockCriticalSection($this->getWrappingReferenceOrNull(), $lock, $isBlocking);
     }
 
     /**
@@ -54,11 +54,8 @@ abstract class WrappingCriticalSection implements CriticalSectionInterface
     abstract protected function leave(): void;
 
     /** @return CriticalSectionInterface<T>|null */
-    private function getOptimalThis(): ?CriticalSectionInterface
+    protected function getWrappingReferenceOrNull(): ?CriticalSectionInterface
     {
-        if ($this instanceof NonCriticalSection) {
-            return $this->wrappedCriticalSection;
-        }
         return $this;
     }
 }
