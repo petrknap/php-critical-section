@@ -13,7 +13,7 @@ use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Exception\LockReleasingException;
 use Symfony\Component\Lock\LockInterface;
 
-class SymfonyLockCriticalSectionTest extends TestCase
+final class SymfonyLockCriticalSectionTest extends TestCase
 {
     public function testAcquiresLockBeforeCriticalSectionIsExecuted(): void
     {

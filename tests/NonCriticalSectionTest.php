@@ -6,7 +6,7 @@ namespace PetrKnap\CriticalSection;
 
 use PHPUnit\Framework\TestCase;
 
-class NonCriticalSectionTest extends TestCase
+final class NonCriticalSectionTest extends TestCase
 {
     /** @dataProvider dataEntersCriticalSectionWhenCanEnter */
     public function testEntersCriticalSectionWhenCanEnter(bool $canEnter): void

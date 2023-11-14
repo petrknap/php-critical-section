@@ -37,10 +37,25 @@ abstract class WrappingCriticalSection implements CriticalSectionInterface
         }
     }
 
-    /** @return SymfonyLockCriticalSection<T> */
-    public function withLock(LockInterface $lock, bool $isBlocking = true): SymfonyLockCriticalSection
+    /** @return WrappingCriticalSection<T> */
+    public function withLock(LockInterface $lock, bool $isBlocking = true): WrappingCriticalSection
     {
         return new SymfonyLockCriticalSection($this->getWrappingReferenceOrNull(), $lock, $isBlocking);
+    }
+
+    /**
+     * @param array<LockInterface> $locks
+     *
+     * @return WrappingCriticalSection<T>
+     */
+    public function withLocks(array $locks, bool $isBlocking = true): WrappingCriticalSection
+    {
+        $locks = array_reverse($locks); // reverse array to keep order of locks during wrapping
+        $instance = $this;
+        foreach ($locks as $lock) {
+            $instance = $instance->withLock($lock, $isBlocking);
+        }
+        return $instance;
     }
 
     /**

@@ -15,9 +15,19 @@ final class CriticalSection
         return new NonCriticalSection();
     }
 
-    /** @return SymfonyLockCriticalSection<T> */
-    public static function withLock(LockInterface $lock, bool $isBlocking = true): SymfonyLockCriticalSection
+    /** @return WrappingCriticalSection<T> */
+    public static function withLock(LockInterface $lock, bool $isBlocking = true): WrappingCriticalSection
     {
         return self::create()->withLock($lock, $isBlocking);
+    }
+
+    /**
+     * @param array<LockInterface> $locks
+     *
+     * @return WrappingCriticalSection<T>
+     */
+    public static function withLocks(array $locks, bool $isBlocking = true): WrappingCriticalSection
+    {
+        return self::create()->withLocks($locks, $isBlocking);
     }
 }

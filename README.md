@@ -9,7 +9,7 @@ use Symfony\Component\Lock\NoLock;
 
 $lock = new NoLock();
 
-$criticalOutput = CriticalSection::withLock($lock)(fn () => 'This was critical!');
+$criticalOutput = CriticalSection::withLock($lock)(fn () => 'This was critical.');
 
 var_dump($criticalOutput);
 ```
@@ -24,7 +24,21 @@ use Symfony\Component\Lock\NoLock;
 $lockA = new NoLock();
 $lockB = new NoLock();
 
-$criticalOutput = CriticalSection::withLock($lockA)->withLock($lockB)(fn () => 'This was even more critical!');
+$criticalOutput = CriticalSection::withLock($lockA)->withLock($lockB)(fn () => 'This was critical.');
+
+var_dump($criticalOutput);
+```
+
+You can also pass locks as array and leave the composition to the critical section.
+
+```php
+use PetrKnap\CriticalSection\CriticalSection;
+use Symfony\Component\Lock\NoLock;
+
+$lockA = new NoLock();
+$lockB = new NoLock();
+
+$criticalOutput = CriticalSection::withLocks([$lockA, $lockB])(fn () => 'This was critical.');
 
 var_dump($criticalOutput);
 ```
