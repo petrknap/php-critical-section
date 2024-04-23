@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
+<?php
 
 declare(strict_types=1);
 
@@ -10,6 +10,7 @@ use Symfony\Component\Lock\LockInterface;
 final class WrappingCriticalSectionTest extends TestCase
 {
     private const FOO = 'bar';
+
     public function testReturnsValueReturnedByExecutedCriticalSection(): void
     {
         self::assertSame(
