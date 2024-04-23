@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
+<?php
 
 declare(strict_types=1);
 
@@ -8,6 +8,7 @@ use Exception;
 use PetrKnap\CriticalSection\Exception\CouldNotEnterCriticalSection;
 use PetrKnap\CriticalSection\Exception\CouldNotLeaveCriticalSection;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Symfony\Component\Lock\Exception\LockAcquiringException;
 use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Exception\LockReleasingException;
@@ -17,7 +18,7 @@ final class SymfonyLockCriticalSectionTest extends TestCase
 {
     public function testAcquiresLockBeforeCriticalSectionIsExecuted(): void
     {
-        $shared = new \stdClass();
+        $shared = new stdClass();
         $shared->isLocked = false;
         $lock = self::createMock(LockInterface::class);
         $lock->expects(self::once())
@@ -34,7 +35,7 @@ final class SymfonyLockCriticalSectionTest extends TestCase
 
     public function testReleasesLockAfterCriticalSectionWasExecuted(): void
     {
-        $shared = new \stdClass();
+        $shared = new stdClass();
         $shared->isLocked = true;
         $lock = self::createMock(LockInterface::class);
         $lock->method('acquire')->willReturn(true);
@@ -53,7 +54,7 @@ final class SymfonyLockCriticalSectionTest extends TestCase
 
     public function testReleasesLockAndThrowsWhenCriticalSectionThrows(): void
     {
-        $shared = new \stdClass();
+        $shared = new stdClass();
         $shared->isLocked = true;
         $lock = self::createMock(LockInterface::class);
         $lock->method('acquire')->willReturn(true);
