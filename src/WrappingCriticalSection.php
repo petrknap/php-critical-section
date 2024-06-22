@@ -21,17 +21,16 @@ abstract class WrappingCriticalSection implements CriticalSectionInterface
     ) {
     }
 
-    /** @inheritDoc */
-    public function __invoke(callable $criticalSection)
+    public function __invoke(callable $criticalSection, mixed ...$args)
     {
         if ($this->enter() === false) {
             return null;
         }
         try {
             if ($this->wrappedCriticalSection) {
-                return ($this->wrappedCriticalSection)(static fn () => $criticalSection());
+                return ($this->wrappedCriticalSection)(static fn () => $criticalSection(...$args));
             }
-            return $criticalSection();
+            return $criticalSection(...$args);
         } finally {
             $this->leave();
         }
