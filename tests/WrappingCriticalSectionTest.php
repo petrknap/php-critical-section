@@ -11,11 +11,28 @@ final class WrappingCriticalSectionTest extends TestCase
 {
     private const FOO = 'bar';
 
+    public function testForwardsArgumentsIntoCriticalSection(): void
+    {
+        $expectedArgs = ['string', 1, null];
+        $receivedArgs = [];
+        (new NonCriticalSection(canEnter: true))(
+            function (string $s, int $i, mixed $n) use (&$receivedArgs): void {
+                $receivedArgs = func_get_args();
+            },
+            ...$expectedArgs,
+        );
+
+        self::assertEquals(
+            $expectedArgs,
+            $receivedArgs,
+        );
+    }
+
     public function testReturnsValueReturnedByExecutedCriticalSection(): void
     {
         self::assertSame(
             self::FOO,
-            (new NonCriticalSection(canEnter: true))(fn () => self::FOO)
+            (new NonCriticalSection(canEnter: true))(fn () => self::FOO),
         );
     }
 
