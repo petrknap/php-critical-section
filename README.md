@@ -43,6 +43,25 @@ $criticalOutput = CriticalSection::withLocks([$lockA, $lockB])(fn () => 'This wa
 var_dump($criticalOutput);
 ```
 
+## Do you need to accept only locked resources?
+
+Use [`LockedResource`s](./src/LockedResource.php) if you need to be sure that you are not processing resource outside it's critical section.
+
+```php
+namespace PetrKnap\CriticalSection;
+
+use Symfony\Component\Lock\NoLock;
+
+/** @param LockedResource<Example\Resource> $lockedResource */
+function f(LockedResource $lockedResource) {
+    echo $lockedResource->value;
+}
+
+$lock = new NoLock();
+$resource = LockableResource::create(new Example\Resource('data'), $lock);
+CriticalSection::withLock($lock)(fn () => f($resource));
+```
+
 ## Does your critical section work with database?
 
 Use [`doctrine/dbal`](https://packagist.org/packages/doctrine/dbal) and its `transactional` method.
