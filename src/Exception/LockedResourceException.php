@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PetrKnap\CriticalSection\Exception;
 
-interface LockedResourceException extends LockableResourceException
+use Throwable;
+
+interface LockedResourceException extends Throwable
 {
 }
