@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 namespace PetrKnap\CriticalSection;
 
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\Lock\LockInterface;
 
-final class CriticalSectionTest extends TestCase
+final class CriticalSectionTest extends CriticalSectionTestCase
 {
-    public function testCreatesCriticalSection(): void
-    {
-        self::assertInstanceOf(
-            WrappingCriticalSection::class,
-            CriticalSection::create()
-        );
-    }
+    use CriticalSectionStaticFactory;
 
-    /** @dataProvider dataCreatesCriticalSectionWithLock */
+    /**
+     * @dataProvider dataCreatesCriticalSectionWithLock
+     */
     public function testCreatesCriticalSectionWithLock(bool $isBlocking): void
     {
         $lock = self::createMock(LockInterface::class);
@@ -29,12 +24,11 @@ final class CriticalSectionTest extends TestCase
             ->method('release');
 
         $criticalSection = CriticalSection::withLock($lock, $isBlocking);
-        $criticalSection(fn () => null);
-
         self::assertInstanceOf(
-            SymfonyLockCriticalSection::class,
+            Symfony\Lock\CriticalSection::class,
             $criticalSection
         );
+        $criticalSection(static fn () => null);
     }
 
     public static function dataCreatesCriticalSectionWithLock(): array
@@ -45,7 +39,9 @@ final class CriticalSectionTest extends TestCase
         ];
     }
 
-    /** @dataProvider dataCreatesCriticalSectionWithLock */
+    /**
+     * @dataProvider dataCreatesCriticalSectionWithLock
+     */
     public function testCreatesCriticalSectionWithLocks(bool $isBlocking): void
     {
         $lock = self::createMock(LockInterface::class);
@@ -56,6 +52,26 @@ final class CriticalSectionTest extends TestCase
         $lock->expects(self::exactly(3))
             ->method('release');
 
-        CriticalSection::withLocks([$lock, $lock, $lock], $isBlocking)(fn () => null);
+        $criticalSection = CriticalSection::withLocks([$lock, $lock, $lock], $isBlocking);
+        self::assertInstanceOf(
+            Symfony\Lock\CriticalSection::class,
+            $criticalSection
+        );
+        $criticalSection(static fn () => null);
+    }
+
+    protected function createCriticalSection(bool $isBlocking): CriticalSection|null
+    {
+        return $isBlocking ? null : self::nonCritical(canEnter: true);
+    }
+
+    protected function createUnenterableCriticalSection(bool $isBlocking): CriticalSection|null
+    {
+        return $isBlocking ? null : self::nonCritical(canEnter: false);
+    }
+
+    protected function createUnleavableCriticalSection(): CriticalSection|null
+    {
+        return null;
     }
 }
