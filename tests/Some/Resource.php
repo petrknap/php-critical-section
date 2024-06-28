@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PetrKnap\CriticalSection\Example;
+namespace PetrKnap\CriticalSection\Some;
 
 final class Resource
 {
     public function __construct(
-        public string $value,
+        public string $value = '',
     ) {
     }
 
