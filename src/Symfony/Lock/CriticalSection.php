@@ -14,12 +14,12 @@ use Symfony\Component\Lock\LockInterface;
 
 final class CriticalSection extends WrappingCriticalSection
 {
-    protected function __construct(
+    public function __construct(
         private readonly LockInterface $lock,
-        Base|null $wrappedCriticalSection,
-        bool $isBlocking,
+        Base|null $wrappedCriticalSection = null,
+        bool $isBlocking = true,
     ) {
-        parent::__construct($wrappedCriticalSection, $isBlocking);
+        parent::__construct($wrappedCriticalSection, isBlocking: $isBlocking);
     }
 
     protected function enter(): bool

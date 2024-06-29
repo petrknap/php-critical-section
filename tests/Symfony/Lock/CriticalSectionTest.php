@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PetrKnap\CriticalSection\Symfony\Lock;
 
 use Exception;
-use PetrKnap\CriticalSection\CriticalSection;
 use PetrKnap\CriticalSection\CriticalSectionTestCase;
 use stdClass;
 use Symfony\Component\Lock\Exception\LockConflictedException;
@@ -26,7 +25,7 @@ final class CriticalSectionTest extends CriticalSectionTestCase
                 return true;
             });
 
-        CriticalSection::withLock($lock)(static function () use ($shared) {
+        (new CriticalSection($lock))(static function () use ($shared) {
             self::assertTrue($shared->isLocked);
         });
     }
@@ -43,7 +42,7 @@ final class CriticalSectionTest extends CriticalSectionTestCase
                 $shared->isLocked = false;
             });
 
-        CriticalSection::withLock($lock)(static function () use ($shared) {
+        (new CriticalSection($lock))(static function () use ($shared) {
             self::assertTrue($shared->isLocked);
         });
 
@@ -64,7 +63,7 @@ final class CriticalSectionTest extends CriticalSectionTestCase
         $expectedException = new Exception();
 
         try {
-            CriticalSection::withLock($lock)(static function () use ($shared, $expectedException) {
+            (new CriticalSection($lock))(static function () use ($shared, $expectedException) {
                 self::assertTrue($shared->isLocked);
                 throw $expectedException;
             });
@@ -80,7 +79,7 @@ final class CriticalSectionTest extends CriticalSectionTestCase
         $lock = self::createMock(LockInterface::class);
         $lock->method('acquire')->willReturn(true);
 
-        return CriticalSection::withLock($lock);
+        return new CriticalSection($lock, isBlocking: $isBlocking);
     }
 
     protected function createUnenterableCriticalSection(bool $isBlocking): CriticalSection|null
@@ -92,7 +91,7 @@ final class CriticalSectionTest extends CriticalSectionTestCase
             $lock->method('acquire')->willReturn(false);
         }
 
-        return CriticalSection::withLock($lock);
+        return new CriticalSection($lock, isBlocking: $isBlocking);
     }
 
     protected function createUnleavableCriticalSection(): CriticalSection|null
@@ -101,6 +100,6 @@ final class CriticalSectionTest extends CriticalSectionTestCase
         $lock->method('acquire')->willReturn(true);
         $lock->method('release')->willThrowException(self::createStub(LockReleasingException::class));
 
-        return CriticalSection::withLock($lock);
+        return new CriticalSection($lock);
     }
 }
