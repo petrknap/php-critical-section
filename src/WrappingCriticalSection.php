@@ -4,48 +4,34 @@ declare(strict_types=1);
 
 namespace PetrKnap\CriticalSection;
 
-use PetrKnap\CriticalSection\Exception\CouldNotEnterCriticalSection;
-use PetrKnap\CriticalSection\Exception\CouldNotLeaveCriticalSection;
 use Symfony\Component\Lock\LockInterface;
 
-/**
- * @template T
- *
- * @implements CriticalSectionInterface<T>
- */
-abstract class WrappingCriticalSection implements CriticalSectionInterface
+abstract class WrappingCriticalSection extends CriticalSection
 {
-    /** @param CriticalSectionInterface<T>|null $wrappedCriticalSection */
     protected function __construct(
-        private ?CriticalSectionInterface $wrappedCriticalSection,
+        private readonly CriticalSection|null $wrappedCriticalSection,
+        bool $isBlocking,
     ) {
+        parent::__construct($isBlocking);
     }
 
-    public function __invoke(callable $criticalSection, mixed ...$args)
+    public function __invoke(callable $criticalSection, mixed ...$args): mixed
     {
-        if ($this->enter() === false) {
-            return null;
-        }
-        try {
+        return parent::__invoke(function (mixed ...$args) use ($criticalSection) {
             if ($this->wrappedCriticalSection) {
                 return ($this->wrappedCriticalSection)(static fn () => $criticalSection(...$args));
             }
             return $criticalSection(...$args);
-        } finally {
-            $this->leave();
-        }
+        }, ...$args);
     }
 
-    /** @return WrappingCriticalSection<T> */
     public function withLock(LockInterface $lock, bool $isBlocking = true): WrappingCriticalSection
     {
-        return new SymfonyLockCriticalSection($this->getWrappingReferenceOrNull(), $lock, $isBlocking);
+        return new Symfony\Lock\CriticalSection($lock, $this->getWrappingReferenceOrNull(), $isBlocking);
     }
 
     /**
      * @param array<LockInterface> $locks
-     *
-     * @return WrappingCriticalSection<T>
      */
     public function withLocks(array $locks, bool $isBlocking = true): WrappingCriticalSection
     {
@@ -57,18 +43,7 @@ abstract class WrappingCriticalSection implements CriticalSectionInterface
         return $instance;
     }
 
-    /**
-     * @return bool false if it is occupied (non-blocking mode only)
-     *
-     * @throws CouldNotEnterCriticalSection
-     */
-    abstract protected function enter(): bool;
-
-    /** @throws CouldNotLeaveCriticalSection */
-    abstract protected function leave(): void;
-
-    /** @return CriticalSectionInterface<T>|null */
-    protected function getWrappingReferenceOrNull(): ?CriticalSectionInterface
+    protected function getWrappingReferenceOrNull(): CriticalSection|null
     {
         return $this;
     }

@@ -2,19 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PetrKnap\CriticalSection;
+namespace PetrKnap\CriticalSection\Symfony\Lock;
 
 use Exception;
-use PetrKnap\CriticalSection\Exception\CouldNotEnterCriticalSection;
-use PetrKnap\CriticalSection\Exception\CouldNotLeaveCriticalSection;
-use PHPUnit\Framework\TestCase;
+use PetrKnap\CriticalSection\CriticalSection;
+use PetrKnap\CriticalSection\CriticalSectionTestCase;
 use stdClass;
-use Symfony\Component\Lock\Exception\LockAcquiringException;
 use Symfony\Component\Lock\Exception\LockConflictedException;
 use Symfony\Component\Lock\Exception\LockReleasingException;
 use Symfony\Component\Lock\LockInterface;
 
-final class SymfonyLockCriticalSectionTest extends TestCase
+final class CriticalSectionTest extends CriticalSectionTestCase
 {
     public function testAcquiresLockBeforeCriticalSectionIsExecuted(): void
     {
@@ -23,12 +21,12 @@ final class SymfonyLockCriticalSectionTest extends TestCase
         $lock = self::createMock(LockInterface::class);
         $lock->expects(self::once())
             ->method('acquire')
-            ->willReturnCallback(function () use ($shared) {
+            ->willReturnCallback(static function () use ($shared) {
                 $shared->isLocked = true;
                 return true;
             });
 
-        CriticalSection::withLock($lock)(function () use ($shared) {
+        CriticalSection::withLock($lock)(static function () use ($shared) {
             self::assertTrue($shared->isLocked);
         });
     }
@@ -41,11 +39,11 @@ final class SymfonyLockCriticalSectionTest extends TestCase
         $lock->method('acquire')->willReturn(true);
         $lock->expects(self::once())
             ->method('release')
-            ->willReturnCallback(function () use ($shared) {
+            ->willReturnCallback(static function () use ($shared) {
                 $shared->isLocked = false;
             });
 
-        CriticalSection::withLock($lock)(function () use ($shared) {
+        CriticalSection::withLock($lock)(static function () use ($shared) {
             self::assertTrue($shared->isLocked);
         });
 
@@ -60,13 +58,13 @@ final class SymfonyLockCriticalSectionTest extends TestCase
         $lock->method('acquire')->willReturn(true);
         $lock->expects(self::once())
             ->method('release')
-            ->willReturnCallback(function () use ($shared) {
+            ->willReturnCallback(static function () use ($shared) {
                 $shared->isLocked = false;
             });
         $expectedException = new Exception();
 
         try {
-            CriticalSection::withLock($lock)(function () use ($shared, $expectedException) {
+            CriticalSection::withLock($lock)(static function () use ($shared, $expectedException) {
                 self::assertTrue($shared->isLocked);
                 throw $expectedException;
             });
@@ -77,42 +75,32 @@ final class SymfonyLockCriticalSectionTest extends TestCase
         }
     }
 
-    /** @dataProvider dataThrowsWhenLockThrowsOnAcquire */
-    public function testThrowsWhenLockThrowsOnAcquire(Exception $lockException): void
-    {
-        $lock = self::createMock(LockInterface::class);
-        $lock->expects(self::once())
-            ->method('acquire')
-            ->willThrowException($lockException);
-
-        self::expectException(CouldNotEnterCriticalSection::class);
-
-        CriticalSection::withLock($lock)(function () {
-        });
-    }
-
-    public static function dataThrowsWhenLockThrowsOnAcquire(): iterable
-    {
-        $knownExceptions = [
-            new LockConflictedException(),
-            new LockAcquiringException(),
-        ];
-        foreach ($knownExceptions as $knownException) {
-            yield get_class($knownException) => [$knownException];
-        }
-    }
-
-    public function testThrowsWhenLockThrowsOnRelease(): void
+    protected function createCriticalSection(bool $isBlocking): CriticalSection|null
     {
         $lock = self::createMock(LockInterface::class);
         $lock->method('acquire')->willReturn(true);
-        $lock->expects(self::once())
-            ->method('release')
-            ->willThrowException(new LockReleasingException());
 
-        self::expectException(CouldNotLeaveCriticalSection::class);
+        return CriticalSection::withLock($lock);
+    }
 
-        CriticalSection::withLock($lock)(function () {
-        });
+    protected function createUnenterableCriticalSection(bool $isBlocking): CriticalSection|null
+    {
+        $lock = self::createMock(LockInterface::class);
+        if ($isBlocking) {
+            $lock->method('acquire')->willThrowException(self::createStub(LockConflictedException::class));
+        } else {
+            $lock->method('acquire')->willReturn(false);
+        }
+
+        return CriticalSection::withLock($lock);
+    }
+
+    protected function createUnleavableCriticalSection(): CriticalSection|null
+    {
+        $lock = self::createMock(LockInterface::class);
+        $lock->method('acquire')->willReturn(true);
+        $lock->method('release')->willThrowException(self::createStub(LockReleasingException::class));
+
+        return CriticalSection::withLock($lock);
     }
 }

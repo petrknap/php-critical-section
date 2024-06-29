@@ -1,6 +1,6 @@
 # Critical section based on `symfony/lock`
 
-The [CriticalSection](./src/CriticalSection.php) is a simple object that handles the critical section overhead for you
+[The `CriticalSection`](./src/CriticalSection.php) is a simple object that handles the critical section overhead for you
 and lets you focus on the actual code.
 
 ```php
@@ -14,7 +14,7 @@ $criticalOutput = CriticalSection::withLock($lock)(fn () => 'This was critical.'
 var_dump($criticalOutput);
 ```
 
-You can wrap critical sections one inside the other thanks to the [WrappingCriticalSection](./src/WrappingCriticalSection.php).
+You can wrap critical sections one inside the other thanks to [the `WrappingCriticalSection`](./src/WrappingCriticalSection.php).
 This makes it easy to combine multiple locks, for example.
 
 ```php
@@ -45,7 +45,7 @@ var_dump($criticalOutput);
 
 ## Do you need to accept only locked resources?
 
-Use [`LockedResource`](./src/LockedResource.php) if you need to be sure that you are not processing resource outside it's critical section.
+Use [the `LockedResource`](./src/LockedResource.php) if you need to be sure that you are not processing resource outside it's critical section.
 
 ```php
 namespace PetrKnap\CriticalSection;
@@ -53,7 +53,7 @@ namespace PetrKnap\CriticalSection;
 use Symfony\Component\Lock\NoLock;
 
 /** @param Locked<Some\Resource> $resource */
-function f(Locked $resource) {
+function f(LockedResource $resource) {
     echo $resource->value;
 }
 
@@ -64,7 +64,7 @@ CriticalSection::withLock($lock)(fn () => f($resource));
 
 ## Does your critical section work with database?
 
-Use [`doctrine/dbal`](https://packagist.org/packages/doctrine/dbal) and its `transactional` method.
+Use [the `doctrine/dbal`](https://packagist.org/packages/doctrine/dbal) and its `transactional` method.
 
 ```php
 /** @var PetrKnap\CriticalSection\CriticalSectionInterface $criticalSection */

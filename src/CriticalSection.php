@@ -4,30 +4,52 @@ declare(strict_types=1);
 
 namespace PetrKnap\CriticalSection;
 
-use Symfony\Component\Lock\LockInterface;
+use Throwable;
 
-/** @template T */
-final class CriticalSection
+abstract class CriticalSection
 {
-    /** @return NonCriticalSection<T> */
-    public static function create(): NonCriticalSection
-    {
-        return new NonCriticalSection();
-    }
+    use CriticalSectionStaticFactory;
 
-    /** @return WrappingCriticalSection<T> */
-    public static function withLock(LockInterface $lock, bool $isBlocking = true): WrappingCriticalSection
-    {
-        return self::create()->withLock($lock, $isBlocking);
+    protected function __construct(
+        protected readonly bool $isBlocking,
+    ) {
     }
 
     /**
-     * @param array<LockInterface> $locks
+     * @phpstan-ignore-next-line Template type T ... is not referenced in a parameter.
      *
-     * @return WrappingCriticalSection<T>
+     * @template T of mixed
+     *
+     * @param (callable(mixed ...$args): T)|callable $criticalSection
+     * @param mixed ...$args will be forwarded to {@link $criticalSection}
+     *
+     * @return T|null returned by {@link $criticalSection} or null when it is occupied (non-blocking mode only)
+     *
+     * @throws Exception\CouldNotEnterCriticalSection
+     * @throws Exception\CouldNotLeaveCriticalSection
+     * @throws Throwable from {@link $criticalSection}
      */
-    public static function withLocks(array $locks, bool $isBlocking = true): WrappingCriticalSection
+    public function __invoke(callable $criticalSection, mixed ...$args): mixed
     {
-        return self::create()->withLocks($locks, $isBlocking);
+        if ($this->enter() === false) {
+            return null;
+        }
+        try {
+            return $criticalSection(...$args);
+        } finally {
+            $this->leave();
+        }
     }
+
+    /**
+     * @return bool false if it is occupied (non-blocking mode only)
+     *
+     * @throws Exception\CouldNotEnterCriticalSection
+     */
+    abstract protected function enter(): bool;
+
+    /**
+     * @throws Exception\CouldNotLeaveCriticalSection
+     */
+    abstract protected function leave(): void;
 }
