@@ -14,7 +14,7 @@ final class AliasesTest extends TestCase
         self::assertInstanceOf(
             Locked::class,
             LockableResource::of(
-                new Some\Resource(),
+                new Some\Resource(1),
                 self::createStub(LockInterface::class),
             ),
         );
