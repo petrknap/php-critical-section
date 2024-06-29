@@ -62,6 +62,51 @@ $resource = LockableResource::of(new Some\Resource('data'), $lock);
 CriticalSection::withLock($lock)(fn () => f($resource));
 ```
 
+## Do you want to keep code clear?
+
+To maintain clarity, I recommend creating a service with named critical sections.
+
+```php
+namespace PetrKnap\CriticalSection;
+
+use Symfony\Component\Lock\NoLock;
+
+class CriticalSectionService {
+    /**
+     * @param callable(Locked<Some\Resource> $from, Locked<Some\Resource> $to): void $section
+     */
+    public function moneyTransfer(callable $section, Some\Resource $from, Some\Resource $to): void {
+        $fromLock = new NoLock();
+        $lockedFrom = LockableResource::of($from, $fromLock);
+        $toLock = new NoLock();
+        $lockedTo = LockableResource::of($to, $toLock);
+        $locks = [$from->value => $fromLock, $to->value => $toLock];
+        ksort($locks); // force locking order
+        CriticalSection::withLocks($locks)($section, $lockedFrom, $lockedTo);
+    }
+}
+
+class Bank {
+    public function __construct(
+        private CriticalSectionService $criticalSection,
+    ) {}
+
+    public function transferMoney(Some\Resource $from, Some\Resource $to): void {
+        $this->criticalSection->moneyTransfer([$this, 'doTransferMoney'], $from, $to);
+    }
+
+    /**
+     * @param Locked<Some\Resource> $from
+     * @param Locked<Some\Resource> $to
+     */
+    public function doTransferMoney(LockedResource $from, LockedResource $to): void {
+        echo "Transferring money from {$from->value} to {$to->value}...";
+    }
+}
+
+(new Bank(new CriticalSectionService()))->transferMoney(new Some\Resource('A'), new Some\Resource('B'));
+```
+
 ## Does your critical section work with database?
 
 Use [`doctrine/dbal`](https://packagist.org/packages/doctrine/dbal) and its `transactional` method.

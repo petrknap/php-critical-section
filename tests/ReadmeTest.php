@@ -24,6 +24,7 @@ class ReadmeTest extends TestCase implements MarkdownFileTestInterface
             'double-lock' => 'string(18) "This was critical."' . PHP_EOL,
             'array-lock' => 'string(18) "This was critical."' . PHP_EOL,
             'resources' => 'data',
+            'named-sections' => '',
             'transactional' => null,
         ];
     }
