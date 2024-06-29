@@ -10,8 +10,8 @@ use Symfony\Component\Lock\LockInterface;
 /**
  * @internal please use {@see CriticalSection}
  *
- * @method static WrappingCriticalSection withLock(LockInterface $lock, bool $isBlocking = true)
- * @method static WrappingCriticalSection withLocks(array $locks, bool $isBlocking = true)
+ * @method static WrappingCriticalSection withLock(LockInterface $lock, bool|null $isBlocking = null)
+ * @method static WrappingCriticalSection withLocks(array $locks, bool|null $isBlocking = null)
  */
 trait CriticalSectionStaticFactory
 {
