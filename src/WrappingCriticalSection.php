@@ -57,6 +57,11 @@ abstract class WrappingCriticalSection implements CriticalSectionInterface
         return $instance;
     }
 
+    public function withArguments(mixed ...$argumentN): WrappingCriticalSection
+    {
+        return new NonCriticalSection($this->getWrappingReferenceOrNull(), true, $argumentN);
+    }
+
     /**
      * @return bool false if it is occupied (non-blocking mode only)
      *

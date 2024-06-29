@@ -64,25 +64,22 @@ CriticalSection::withLock($lock)(fn () => f($resource));
 
 ## Do you want to keep code clear?
 
-To maintain clarity, I recommend creating a service with named critical sections.
+To maintain clarity, I recommend creating a factory for named critical sections.
 
 ```php
 namespace PetrKnap\CriticalSection;
 
 use Symfony\Component\Lock\NoLock;
 
-class CriticalSectionService {
-    /**
-     * @param callable(Locked<Some\Resource> $from, Locked<Some\Resource> $to): void $section
-     */
-    public function moneyTransfer(callable $section, Some\Resource $from, Some\Resource $to): void {
+class CriticalSectionFactory {
+    public function moneyTransfer(Some\Resource $from, Some\Resource $to): CriticalSectionInterface {
         $fromLock = new NoLock();
         $lockedFrom = LockableResource::of($from, $fromLock);
         $toLock = new NoLock();
         $lockedTo = LockableResource::of($to, $toLock);
         $locks = [$from->value => $fromLock, $to->value => $toLock];
         ksort($locks); // force locking order
-        CriticalSection::withLocks($locks)($section, $lockedFrom, $lockedTo);
+        return CriticalSection::withLocks($locks)->withArguments($lockedFrom, $lockedTo);
     }
 }
 
@@ -92,7 +89,7 @@ class Bank {
     ) {}
 
     public function transferMoney(Some\Resource $from, Some\Resource $to): void {
-        $this->criticalSection->moneyTransfer([$this, 'doTransferMoney'], $from, $to);
+        $this->criticalSection->moneyTransfer($from, $to)([$this, 'doTransferMoney']);
     }
 
     /**
