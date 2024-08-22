@@ -33,7 +33,7 @@ abstract class CriticalSectionTestCase extends TestCase
      */
     public function testForwardsReturnFromCriticalSection(bool $isBlocking): void
     {
-        $expectedReturn = new Some\Resource();
+        $expectedReturn = new Some\Resource(1);
 
         self::assertSame(
             $expectedReturn,

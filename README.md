@@ -52,14 +52,44 @@ namespace PetrKnap\CriticalSection;
 
 use Symfony\Component\Lock\NoLock;
 
-/** @param Locked<Some\Resource> $resource */
-function f(LockedResource $resource) {
-    echo $resource->value;
+/**
+ * @param Locked<Some\Resource> $from
+ * @param Locked<Some\Resource> $to
+ */
+function transferValue(LockedResource $from, LockedResource $to, int $volume): void {
+    if ($from->value < $volume) {
+        throw new \RuntimeException();
+    }
+    $from->value -= $volume;
+    $to->value += $volume;
+    echo "Moved {$volume} from #{$from->id} (current value {$from->value}) to #{$to->id} (current value {$to->value}).";
 }
 
-$lock = new NoLock();
-$resource = LockableResource::of(new Some\Resource('data'), $lock);
-CriticalSection::withLock($lock)(fn () => f($resource));
+$fromLock = new NoLock();
+$lockedFrom = LockableResource::of(new Some\Resource(1, value: 15), $fromLock);
+$toLock = new NoLock();
+$lockedTo = LockableResource::of(new Some\Resource(2, value: 5), $toLock);
+CriticalSection::withLocks([$fromLock, $toLock])(fn () => transferValue($lockedFrom, $lockedTo, 10));
+```
+
+## Do you want to keep code clear?
+
+To maintain clarity, I recommend using your own named critical sections (as service),
+like [`Some\NamedCriticalSectionService`](./tests/Some/NamedCriticalSectionService.php).
+
+```php
+namespace PetrKnap\CriticalSection;
+
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
+
+$criticalSection = new Some\NamedCriticalSectionService(new LockFactory(new InMemoryStore()));
+
+$criticalSection->updateSomeResources(
+     fn (LockedResource $from, LockedResource $to) => transferValue($from, $to, 10),
+     new Some\Resource(1, value: 15),
+     new Some\Resource(2, value: 5),
+);
 ```
 
 ## Does your critical section work with database?

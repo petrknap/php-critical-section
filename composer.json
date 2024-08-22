@@ -3,15 +3,15 @@
   "autoload": {
     "psr-4": {
       "PetrKnap\\CriticalSection\\": "src"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "PetrKnap\\CriticalSection\\": "tests"
     },
     "files": [
       "src/aliases.php"
     ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "PetrKnap\\CriticalSection\\": "tests"
+    }
   },
   "config": {
     "allow-plugins": false,
@@ -34,6 +34,7 @@
   "name": "petrknap/critical-section",
   "require": {
     "php": ">=8.1",
+    "petrknap/optional": "^2.0|^3.0",
     "petrknap/shorts": "^2.1",
     "symfony/lock": "^6.0|^7.0"
   },
@@ -46,11 +47,12 @@
   "scripts": {
     "test": "phpunit --colors=always --testdox tests",
     "ci-script": [
-      "@check-requirements",
       "@check-implementation",
+      "@check-requirements",
       "@test-implementation"
     ],
     "check-requirements": [
+      "composer update \"petrknap/*\"",
       "composer outdated \"petrknap/*\" --major-only --strict --ansi --no-interaction"
     ],
     "check-implementation": [

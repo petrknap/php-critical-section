@@ -25,13 +25,13 @@ abstract class LockedResourceTestCase extends TestCase
 
     public function testIsMixin(): void
     {
-        $string = 'string';
+        $value = 2;
         /** @var Locked<Some\Resource> $locked */
-        $locked = $this->getLockedResource(new Some\Resource());
+        $locked = $this->getLockedResource(new Some\Resource(1));
 
-        $locked->value = $string;
-        self::assertSame($string, $locked->value);
-        self::assertSame($string, $locked->getValue());
+        $locked->value = $value;
+        self::assertSame($value, $locked->value);
+        self::assertSame($value, $locked->getValue());
     }
 
     abstract protected function getUnlockedResource(mixed $resource): LockedResource;

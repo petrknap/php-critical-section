@@ -7,11 +7,12 @@ namespace PetrKnap\CriticalSection\Some;
 final class Resource
 {
     public function __construct(
-        public string $value = '',
+        public readonly int $id,
+        public int $value = 0,
     ) {
     }
 
-    public function getValue(): string
+    public function getValue(): int
     {
         return $this->value;
     }
